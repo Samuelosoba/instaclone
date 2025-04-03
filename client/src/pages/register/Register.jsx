@@ -1,6 +1,7 @@
 import Logo from "../../assets/logo.png";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+
 import {
   validateEmail,
   validatefullname,
@@ -8,24 +9,44 @@ import {
   validateUsername,
 } from "../../utils/formvalidate";
 import { useState } from "react";
-
+import MetaArgs from "../../components/MetaArgs";
+import { registerUser } from "../../api/auth";
+import { toast } from "sonner";
+import { useAuth } from "../../store";
+import handleError from "../../utils/handleError";
 export default function Register() {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm();
+  const { setAccessToken } = useAuth();
+  const navigate = useNavigate();
+
   const [revealPassword, setRevealPassword] = useState(false);
   const togglePassword = () => {
     setRevealPassword((prev) => !prev);
   };
-  const onSubmit = (data) => {
-    console.log("form data", data);
-    console.log("errors", errors);
+  const onFormSubmit = async (data) => {
+    try {
+      const res = await registerUser(data);
+
+      if (res.status === 201) {
+        toast.success(res.data.message);
+        setAccessToken(res.data.accessToken);
+        navigate("/");
+      }
+    } catch (error) {
+      handleError(error);
+    }
   };
   return (
     <div className="">
-      <div className="w-[90vw] md:w-[500px] border rounded-md border-[#A1A1A1] py-[40px] px-[28px]">
+      <MetaArgs
+        title="Sign up to Instahots"
+        content="Get access to InstaShots"
+      />
+      <div className="  border rounded-md border-[#A1A1A1] py-[40px] px-[28px]">
         <div className="flex justify-center">
           <Link to="/">
             <img src={Logo} />
@@ -33,7 +54,7 @@ export default function Register() {
         </div>
         <form
           className="md:max-w-[400px] mx-auto mt-10"
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(onFormSubmit)}
         >
           <div className="mb-4">
             {" "}
@@ -134,7 +155,7 @@ export default function Register() {
           </p>
         </form>
       </div>
-      <div className="w-[90vw] md:w-[500px] h-[80px] border rounded-md border-[#A1A1A1] mt-6 flex items-center justify-center py-6">
+      <div className=" md:w-[500px] h-[80px] border rounded-md border-[#A1A1A1] mt-6 flex items-center justify-center py-6">
         <p className="text-[20px] mr-2">Already have an account? </p>{" "}
         <Link to="/auth/login" className="text-[#8D0D76] text-bold text-[20px]">
           log in

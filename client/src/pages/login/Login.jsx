@@ -1,29 +1,45 @@
 import Logo from "../../assets/logo.png";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { validatePassword, validateUsername } from "../../utils/formvalidate";
-
+import MetaArgs from "../../components/MetaArgs";
+import { loginUser } from "../../api/auth";
+import handleError from "../../utils/handleError";
+import { toast } from "sonner";
+import { useAuth } from "../../store";
 export default function Login() {
-  console.log(validateUsername(""));
-  console.log(validateUsername("ab"));
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm();
+  const navigate = useNavigate();
+  const { setAccessToken } = useAuth();
   const [revealPassword, setRevealPassword] = useState(false);
   const togglePassword = () => {
     setRevealPassword((prev) => !prev);
   };
-  const onSubmit = (data) => {
-    console.log("form data", data);
-    console.log("errors", errors);
-  };
+ const onFormSubmit = async (data) => {
+   try {
+     const res = await loginUser(data);
+
+     if (res.status === 200) {
+       toast.success(res.data.message);
+       setAccessToken(res.data.accessToken);
+       navigate("/");
+     }
+   } catch (error) {
+     handleError(error);
+   }
+ };
   return (
     <div className="">
-      <div className="w-[90vw] md:w-[500px]  border rounded-md border-[#A1A1A1] py-[40px] px-[28px]">
+      <MetaArgs
+        title="Log in to InstaShots"
+        content="Get access to InstaShots"
+      />
+      <div className=" md:w-[500px]  border rounded-md border-[#A1A1A1] py-[40px] px-[28px]">
         <div className="flex justify-center">
           <Link to="/">
             <img src={Logo} />
@@ -31,7 +47,7 @@ export default function Login() {
         </div>
         <form
           className="md:max-w-[400px] mx-auto mt-10"
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(onFormSubmit)}
         >
           <div className="mb-4">
             {" "}
