@@ -13,7 +13,7 @@ export const authenticateUser = async (token) => {
   });
 };
 export const resendEmailVerificationLink = async (token) => {
-  return await axiosInstance.get("/auth/resend-verification", {
+  return await axiosInstance.get("/auth/resend-verification-email", {},{
     headers: {
       Authorization: `Bearer ${token}`,
     },

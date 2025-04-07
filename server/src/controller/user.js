@@ -87,7 +87,9 @@ export const loginUser = async (req, res, next) => {
       accessToken,
       message: `Welcome ${user.username}`,
     });
-  } catch (error) {}
+  } catch (error) {
+    next(error)
+  }
 };
 export const authenticateUser = async (req, res, next) => {
   const { id: userId } = req.user;

@@ -5,10 +5,7 @@ import { useAuth } from "./store";
 import { LazySpinner } from "./components/Spinner";
 
 function App() {
-  const { isCheckingAuth } = useAuth();
-  if (isCheckingAuth) {
-    return <LazySpinner />;
-  }
+
   return (
     <HelmetProvider>
       <Toaster position="top-center" expand={true} richColors />

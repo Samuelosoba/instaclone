@@ -8,11 +8,7 @@ export default function AuthProvider({ children }) {
     "instashotsToken",
     null
   );
-  const [user, setUser] = useState({
-    isError: null,
-    data: null,
-    isAuthenticated: false,
-  });
+  const [user, setUser] = useState(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   useEffect(() => {
     if (!accessToken) return;
@@ -21,11 +17,7 @@ export default function AuthProvider({ children }) {
         setIsCheckingAuth(true);
         const res = await authenticateUser(accessToken);
         if (res.status === 200) {
-          setUser((prev) => ({
-            ...prev,
-            data: res.data,
-            isAuthenticated: true,
-          }));
+          setUser(res.data.user)
         }
       } catch (error) {
         console.log(error);

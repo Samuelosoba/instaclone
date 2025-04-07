@@ -5,16 +5,30 @@ import Home from "../pages/home/Home";
 import Register from "../pages/register/Register";
 import Login from "../pages/login/Login";
 import ForgetPassword from "../pages/forgetpassword/ForgetPassword";
+import { PrivateRoutes, PublicRoutes, VerifyRoutes } from "./ProtectedRoutes";
+
+// import accessToken from ""
+import { useAuth } from "../store";
+import VerifyAccount from "../pages/verifyAccount/VerifyAccount";
 const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
 const RootLayout = lazy(() => import("../layouts/RootLayout"));
+const VerifyAccountLayout = lazy(() =>
+  import("../layouts/VerifyAccountLayout")
+);
 
 export default function AppRoutes() {
+  const { accessToken, isCheckingAuth, user } = useAuth();
+  if (isCheckingAuth) {
+    return <LazySpinner />;
+  }
   const routes = [
     {
       path: "auth",
       element: (
         <Suspense fallback={<LazySpinner />}>
-          <AuthLayout />
+          <PublicRoutes accessToken={accessToken}>
+            <AuthLayout />
+          </PublicRoutes>
         </Suspense>
       ),
       children: [
@@ -28,7 +42,7 @@ export default function AppRoutes() {
         },
         {
           path: "forgot-password",
-          element: <ForgetPassword/>,
+          element: <ForgetPassword />,
         },
       ],
     },
@@ -36,7 +50,9 @@ export default function AppRoutes() {
       path: "/",
       element: (
         <Suspense fallback={<LazySpinner />}>
-          <RootLayout />
+          <PrivateRoutes accessToken={accessToken} user={user}>
+            <RootLayout />
+          </PrivateRoutes>
         </Suspense>
       ),
       children: [
@@ -45,6 +61,16 @@ export default function AppRoutes() {
           element: <Home />,
         },
       ],
+    },
+    {
+      element: (
+        <Suspense fallback={<LazySpinner />}>
+          <VerifyRoutes accessToken={accessToken} user={user}>
+            <VerifyAccountLayout />
+          </VerifyRoutes>
+        </Suspense>
+      ),
+      children: [{ path: "verify-email", element: <VerifyAccount /> }],
     },
   ];
   const router = createBrowserRouter(routes);
