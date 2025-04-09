@@ -38,7 +38,7 @@ export const registerUser = async (req, res, next) => {
     user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
     //specify the verifyAccountlink
-    const verifyAccountLink = `${process.env.CLIENT_URL}/account/verify-account/${user._id}/${user.verificationToken}`;
+    const verifyAccountLink = `${process.env.CLIENT_URL}/verify-email/${user._id}/${user.verificationToken}`;
     //send email to user
     await sendMail({
       fullname: user.fullname,
@@ -56,7 +56,8 @@ export const registerUser = async (req, res, next) => {
     //send a response ro the client
     res.status(201).json({
       success: true,
-      message: "Account creted successfully",
+      message:
+        "Account creted successfully, please check your mail in order to verify your account",
       accessToken,
     });
   } catch (error) {
@@ -88,7 +89,7 @@ export const loginUser = async (req, res, next) => {
       message: `Welcome ${user.username}`,
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 export const authenticateUser = async (req, res, next) => {
@@ -110,7 +111,7 @@ export const resendEmailVerificationLink = async (req, res, next) => {
     user.verificationToken = verifyAccountToken;
     user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
-    const verifyAccountLink = `${process.env.CLIENT_URL}/account/verify-account/${user._id}/${user.verificationToken}`;
+    const verifyAccountLink = `${process.env.CLIENT_URL}/verify-email/${user._id}/${user.verificationToken}`;
     //send email to user
     await sendMail({
       fullname: user.fullname,
@@ -184,7 +185,7 @@ export const sendForgotPasswordMail = async (req, res, next) => {
     user.passwordResetToken = resetToken;
     user.passwordResetExpires = Date.now() + 30 * 60 * 1000;
     await user.save();
-    const resetPasswordLink = `${process.env.CLIENT_URL}/account/reset-password/${user._id}/${user.passwordResetToken}`;
+    const resetPasswordLink = `${process.env.CLIENT_URL}/auth/reset-password/${user._id}/${user.passwordResetToken}`;
     //send email to user
     await sendMail({
       fullname: user.fullname,

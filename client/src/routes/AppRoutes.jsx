@@ -9,7 +9,9 @@ import { PrivateRoutes, PublicRoutes, VerifyRoutes } from "./ProtectedRoutes";
 
 // import accessToken from ""
 import { useAuth } from "../store";
+import SendVerifyMail from "../pages/verifyAccount/SendVerifyMail";
 import VerifyAccount from "../pages/verifyAccount/VerifyAccount";
+import ResetPassword from "../pages/forgetpassword/ResetPassword";
 const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
 const RootLayout = lazy(() => import("../layouts/RootLayout"));
 const VerifyAccountLayout = lazy(() =>
@@ -44,6 +46,10 @@ export default function AppRoutes() {
           path: "forgot-password",
           element: <ForgetPassword />,
         },
+        {
+          path: "reset-password/:userId/:passwordToken",
+          element: <ResetPassword />,
+        },
       ],
     },
     {
@@ -70,7 +76,13 @@ export default function AppRoutes() {
           </VerifyRoutes>
         </Suspense>
       ),
-      children: [{ path: "verify-email", element: <VerifyAccount /> }],
+      children: [
+        { path: "verify-email", element: <SendVerifyMail /> },
+        {
+          path: "verify-email/:userId/:verificationToken",
+          element: <VerifyAccount />,
+        },
+      ],
     },
   ];
   const router = createBrowserRouter(routes);

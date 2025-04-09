@@ -13,15 +13,20 @@ export const authenticateUser = async (token) => {
   });
 };
 export const resendEmailVerificationLink = async (token) => {
-  return await axiosInstance.get("/auth/resend-verification-email", {},{
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  return await axiosInstance.post(
+    "/auth/resend-verification-email",
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 };
 export const verifyEmailAccount = async (userId, verificationToken, token) => {
   return await axiosInstance.patch(
     `/auth/verify-account/${userId}/${verificationToken}`,
+    {},
     {
       headers: {
         Authorization: `Bearer ${token}`,
