@@ -5,6 +5,7 @@ import cors from "cors";
 
 //import routes
 import userRoutes from "./routes/user.js";
+import postRoutes from "./routes/post.js"
 const app = express();
 const corsOptions = {
   origin: ["http://localhost:4600", "https://instaclone-robj.vercel.app"],
@@ -20,6 +21,7 @@ app.disable("x-powered-by"); //disable the tech stack
 
 //api
 app.use("/api/auth", userRoutes);
+app.use("/api/post", postRoutes)
 
 //handle route errors
 app.use((req, res, next) => {

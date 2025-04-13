@@ -7,26 +7,37 @@ import {
   verifyEmailAccount,
   sendForgotPasswordMail,
   resetPassword,
+  logout,
 } from "../controller/user.js";
 import { verifyToken, authorizeRoles } from "../middleware/auth.js";
-import createHttpError from "http-errors";
-import User from "../model/user.js";
+import { rateLimiter } from "../middleware/rateLimiter.js";
+import { cacheMiddleware, clearCache } from "../middleware/cache.js";
 const router = express.Router();
 router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/login", rateLimiter, loginUser);
 router.post(
   "/resend-verification-email",
+  rateLimiter,
   verifyToken,
   authorizeRoles("user", "admin"),
   resendEmailVerificationLink,
   sendForgotPasswordMail
 );
 router.post("/sendforgot-password-mail", sendForgotPasswordMail);
+router.post(
+  "/logout",
+  (req, res, next) => {
+    clearCache(null, true);
+    next();
+  },
+  logout
+);
 //get
 router.get(
   "/user",
   verifyToken,
   authorizeRoles("user", "admin"),
+  cacheMiddleware("auth_User", 600),
   authenticateUser
 );
 //patch
@@ -36,9 +47,6 @@ router.patch(
   authorizeRoles("user", "admin"),
   verifyEmailAccount
 );
-router.patch(
-  "/reset-password/:userId/:passwordToken",
-  resetPassword
-);
+router.patch("/reset-password/:userId/:passwordToken", resetPassword);
 
 export default router;

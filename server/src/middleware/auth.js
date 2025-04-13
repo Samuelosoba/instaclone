@@ -3,7 +3,6 @@ import createHttpError from "http-errors";
 export const verifyToken = async (req, res, next) => {
   //export token from req.headers
   const { authorization: token } = req.headers;
-  console.log(token);
 
   if (!token) {
     return next(createHttpError(403, "You are unathenticated"));
