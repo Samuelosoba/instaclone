@@ -6,9 +6,6 @@ cloudinary.config({
   secure: true,
 });
 
-console.log(cloudinary);
-
-
 export const uploadToCloudinary = async (file, options = {}) => {
   try {
     const uploadResponse = await cloudinary.uploader.upload(file, {
@@ -16,15 +13,15 @@ export const uploadToCloudinary = async (file, options = {}) => {
       resource_type: "auto",
       ...options,
     });
-    console.log(uploadResponse);
+    
 
     return {
       url: uploadResponse.secure_url,
       public_id: uploadResponse.public_id,
     };
   } catch (error) {
-    console.error(error)
-    throw new Error(`Upload failed: ${error}`);
+    console.error(error.error.message)
+    throw new Error(`Upload failed: ${error.error.message}`);
   }
 };
 export const deleteFromCloudinary = async (publicId) => {

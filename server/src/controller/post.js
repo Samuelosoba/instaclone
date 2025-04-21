@@ -7,6 +7,7 @@ import {
 
 export const createPost = async (req, res, next) => {
   const { caption, description, media, tags, isPublic } = req.body;
+  console.log(media);
   const { id: userId } = req.user;
   if (!caption || media.length === 0) {
     return next(
@@ -32,7 +33,7 @@ export const createPost = async (req, res, next) => {
         )
       );
       console.log(results);
-      
+
       return {
         urls: results.map((result) => result.url),
         ids: results.map((result) => result.public_id),
@@ -45,7 +46,7 @@ export const createPost = async (req, res, next) => {
       userId: userId,
       caption,
       description,
-      tags: tags.split(" "),
+      tags,
       isPublic,
       media: mediaResults.urls,
       mediaPublicIds: mediaResults.ids,
@@ -65,6 +66,32 @@ export const createPost = async (req, res, next) => {
       }
     };
     await deleteMedia();
+    next(error);
+  }
+};
+export const getAllPosts = async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10; //limit data fetch to 10 items per page
+  const skip = (page - 1) * limit;
+  const totalPosts = await Post.countDocuments(); //gets total number of posts
+  const totalPages = Math.ceil(totalPosts / limit);
+  try {
+    const posts = await Post.find()
+      .populate("userId", "username profilePicture")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    res.status(200).json({
+      success: true,
+      posts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalPosts,
+        hasMore: skip + posts.length < totalPosts,
+      },
+    });
+  } catch (error) {
     next(error);
   }
 };

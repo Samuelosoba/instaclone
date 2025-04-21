@@ -74,5 +74,5 @@ const userSchema = new Schema(
   },
   { timestamps: true } //adds createdAt and updatedAt to a document
 );
-const User = model("user", userSchema);
+const User = model("User", userSchema);
 export default User; 

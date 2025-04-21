@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { AuthContext } from ".";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { authenticateUser, logout } from "../api/auth";
-import {toast} from "sonner"
-import handleError from "../utils/handleError"
+import { toast } from "sonner";
+import handleError from "../utils/handleError";
 
 export default function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useLocalStorage(
@@ -19,34 +19,31 @@ export default function AuthProvider({ children }) {
         setAccessToken(null);
         setUser(null);
         toast.success(res.data.message, { id: "logout" });
+        window.location.reload();
       }
     } catch (error) {
       console.error(error);
       toast.error("There was an error trying to log you out");
     }
   }, [setAccessToken]);
-  useEffect(
-    () => {
-      if (!accessToken) return;
-      const getUser = async () => {
-        try {
-          setIsCheckingAuth(true);
-          const res = await authenticateUser(accessToken);
-          if (res.status === 200) {
-            setUser(res.data.user);
-          }
-        } catch (error) {
-          console.log(error);
-          handleLogout();
-        } finally {
-          setIsCheckingAuth(false);
+  useEffect(() => {
+    if (!accessToken) return;
+    const getUser = async () => {
+      try {
+        setIsCheckingAuth(true);
+        const res = await authenticateUser(accessToken);
+        if (res.status === 200) {
+          setUser(res.data.user);
         }
-      };
-      getUser();
-    },
-    [accessToken],
-    handleLogout
-  );
+      } catch (error) {
+        console.log(error);
+        handleLogout();
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+    getUser();
+  }, [accessToken, handleLogout]);
   console.log(user);
 
   return (
