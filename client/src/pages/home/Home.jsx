@@ -14,7 +14,7 @@ export default function Home() {
         <div className="grid grid-cols-12 gap-4 justify-between">
           {/* post card div */}
           <div className="col-span-12 lg:col-span-8">
-            <div className="w-full md:max-w-[450px] mx-auto">
+            <div className="w-full max-w-[600px] 2xl:max-w-[700px] mx-auto">
               {loading ? (
                 <Skeleton />
               ) : (

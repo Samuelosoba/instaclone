@@ -13,3 +13,46 @@ export const getAllPosts = async (page, limit, accessToken) => {
     },
   });
 };
+export const handlePostLikes = async (postId, accessToken) => {
+  return await axiosInstance.patch(
+    `/post/like/${postId}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+};
+export const handleSavePost = async (postId, accessToken) => {
+  return await axiosInstance.patch(
+    `/post/save/${postId}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+};
+export const seePostLikes = async (postId, accessToken) => {
+  return await axiosInstance.get(`/post/see-who-liked/${postId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+export const getAPost = async (postId, accessToken) => {
+  return await axiosInstance.get(`/post/get/${postId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+export const deletePost = async (postId, accessToken) => {
+  return await axiosInstance.delete(`/post/delete/${postId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};

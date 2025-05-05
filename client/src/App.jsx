@@ -5,7 +5,6 @@ import { useAuth } from "./store";
 import { LazySpinner } from "./components/Spinner";
 
 function App() {
-
   return (
     <HelmetProvider>
       <Toaster position="top-center" expand={true} richColors />

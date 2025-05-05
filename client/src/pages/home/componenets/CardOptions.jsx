@@ -1,14 +1,34 @@
 import { useState } from "react";
 import Modal from "../../../components/Modal";
 import { Link } from "react-router";
+import { followUser } from "../../../api/auth";
+import { toast } from "sonner";
+import handleError from "../../../utils/handleError";
 
-export default function CardOptions({ post,user }) {
+export default function CardOptions({ post, user, accessToken, setUser }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(
-    user?.isFollowing?.includes(
-      post?.isFollowing?.includes(post?.userId?._id || "")
-    )
-  ); //check if post owner id is included in logged in user following array
+  const [followLoading, setFollowLoading] = useState(false);
+  // const [isFollowing, setIsFollowing] = useState(
+  //   user?.following?.includes(post?.userId?._id || "")
+  // );
+  //check if post owner id is included in logged in user following array
+  const toggleFollowUser = async (followerId) => {
+    setFollowLoading(true);
+    try {
+      const res = await followUser(followerId, accessToken);
+      if (res.status === 200) {
+        toast.success(res.data.message);
+        setUser((prev) => ({
+          ...prev,
+          ...res.data.user,
+        }));
+      }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
   return (
     <>
       <i
@@ -26,8 +46,18 @@ export default function CardOptions({ post,user }) {
         <div className="text-center p-3">
           {user._id !== post?.userId?._id && (
             <>
-              <p>{isFollowing ? "Unfollow" : "Follow"}</p>
-         
+              <p
+                role="button"
+                className="font-semibold cursor-pointer"
+                onClick={() => toggleFollowUser(post?.userId?._id)}
+              >
+                {followLoading
+                  ? "loading..."
+                  : user?.following?.includes(post?.userId?._id || "")
+                  ? "Unfollow"
+                  : "Follow"}
+              </p>
+              <div className="divider"></div>
             </>
           )}
           <p className="font-medium" title="View post">

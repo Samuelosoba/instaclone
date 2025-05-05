@@ -6,6 +6,7 @@ import Register from "../pages/register/Register";
 import Login from "../pages/login/Login";
 import ForgetPassword from "../pages/forgetpassword/ForgetPassword";
 import { PrivateRoutes, PublicRoutes, VerifyRoutes } from "./ProtectedRoutes";
+import Comments from "../pages/comments/Comments";
 
 // import accessToken from ""
 import { useAuth } from "../store";
@@ -68,6 +69,10 @@ export default function AppRoutes() {
         {
           index: true,
           element: <Home />,
+        },
+        {
+          path: "post/:id",
+          element: <Comments />,
         },
       ],
     },

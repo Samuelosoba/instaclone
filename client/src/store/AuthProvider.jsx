@@ -54,6 +54,7 @@ export default function AuthProvider({ children }) {
         user,
         isCheckingAuth,
         handleLogout,
+        setUser,
       }}
     >
       {children}

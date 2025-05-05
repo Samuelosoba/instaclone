@@ -1,40 +1,94 @@
 import { Link, useNavigate } from "react-router";
 import TimeAgo from "timeago-react";
 import CardOptions from "./CardOptions";
-import { useAuth } from "../../../store";
+import { useAuth, usePost } from "../../../store";
 import { useMemo, useState } from "react";
 import LazyLoadComponent from "../../../components/LazyLoadComponent";
 import useSlideControl from "../../../hooks/useSlideControl";
 import SeeLikes from "./SeeLikes";
 import { useForm } from "react-hook-form";
-
+import { handlePostLikes, handleSavePost } from "../../../api/post";
+import handleError from "../../../utils/handleError";
+import { toast } from "sonner";
+import { createComment, getComments } from "../../../api/comment";
+import useFetch from "../../../hooks/useFetch";
 export default function Card({ post }) {
   const { currentImageIndex, handlePrevious, handleNext } = useSlideControl(
     post?.media
   );
-  const { user } = useAuth();
+  const { user, setUser, accessToken } = useAuth();
+  const { data, setData } = useFetch({
+    apiCall: getComments,
+    params: [post?._id, accessToken],
+  });
+  const { setPosts } = usePost();
   const [isPostLiked, setIsPostLiked] = useState(
-    post?.likes?.some((like) => like._id === user?._id)
+    post?.likes?.includes(user?._id)
   ); //returns boolean if userId atches the likeId
   const [isPostSaved, setIsPostSaved] = useState(
-    post?.savedBy?.some((saved) => saved._id === user?._id)
+    post?.savedBy?.includes(user?._id)
   );
   const [likeCount, setLikeCount] = useState(post?.likes?.length || 0);
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm();
   const formatTime = (time) => {
     return <TimeAgo datetime={time} locale="en-US" />;
   };
-  const postComment = (data) => {
-    console.log(data);
+  const postComment = async (data) => {
+    try {
+      const res = await createComment(post?._id, data, accessToken);
+      if (res.status === 201) {
+        toast.success(res.data.message);
+        reset({ comment: "" });
+        setData((prev) => ({
+          ...prev,
+          comments: [res.data.comment, ...(prev?.comments || [])],
+        }));
+      }
+    } catch (error) {
+      handleError(error);
+    }
   };
+  //handlepostlike
+  const likePost = async () => {
+    try {
+      const res = await handlePostLikes(post?._id, accessToken);
+      if (res.status == 200) {
+        toast.success(res.data.message, { id: "likePost" });
+        setPosts((prev) =>
+          prev.map((item) => (item._id === post?._id ? res.data.post : item))
+        );
+        setIsPostLiked(res.data.post.likes.includes(user?._id));
+        setLikeCount(res.data.post.likes.length);
+      }
+    } catch (error) {
+      handleError(error);
+    }
+  };
+  //save post
+  const savePost = async () => {
+    try {
+      const res = await handleSavePost(post?._id, accessToken);
+      if (res.status == 200) {
+        toast.success(res.data.message, { id: "savePost" });
+        setPosts((prev) =>
+          prev.map((item) => (item._id === post?._id ? res.data.post : item))
+        );
+        setIsPostSaved(res.data.post.savedBy.includes(user?._id));
+      }
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   return (
     <>
-      <div className="lg:w-[450px] md:rounded-md">
+      <div className="lg:w-[450px] 2xl:w-[600px] md:rounded-md">
         <div className="py-2">
           <div className="mb-2 flex items-center justify-between px-4 md:px-0">
             <Link
@@ -59,7 +113,12 @@ export default function Card({ post }) {
                 </p>
               </div>
             </Link>
-            <CardOptions post={post} user={user} />
+            <CardOptions
+              post={post}
+              user={user}
+              accessToken={accessToken}
+              setUser={setUser}
+            />
           </div>
           <figure className="relative overflow-hidden">
             {post?.media.map((item, index) => (
@@ -140,7 +199,8 @@ export default function Card({ post }) {
                   isPostLiked ? "ri-heart-fill text-red-700" : "ri-heart-line"
                 } text-2xl cursor-pointer`}
                 role="button"
-                title={isPostLiked ? "unlike" : "like"}
+                title={isPostLiked ? "Unlike" : "Like"}
+                onClick={likePost}
               ></i>
               <i
                 className="ri-chat-3-line text-2xl cursor-pointer"
@@ -157,6 +217,7 @@ export default function Card({ post }) {
               } text-2xl cursor-pointer`}
               role="button"
               title={isPostSaved ? "unsave" : "save"}
+              onClick={savePost}
             ></i>
           </div>
           <SeeLikes likeCount={likeCount} post={post} user={user} />
@@ -183,7 +244,9 @@ export default function Card({ post }) {
             </div>
           )}
           <p className="text-gray-600 cursor-pointer px-4 md:px-0 mt-2">
-            <Link to={`/post/${post?._id}`}>View all comments</Link>
+            <Link to={`/post/${post?._id}`}>
+              View all {data?.comments?.length} comments
+            </Link>
           </p>
           <form
             onSubmit={handleSubmit(postComment)}

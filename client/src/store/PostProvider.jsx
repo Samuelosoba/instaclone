@@ -45,7 +45,7 @@ export default function PostProvider({ children }) {
   console.log(posts);
   
   return (
-    <PostContext.Provider value={{ posts, setPosts,loading,error }}>
+    <PostContext.Provider value={{ posts, setPosts,loading,error,setPosts }}>
       {children}
     </PostContext.Provider>
   );

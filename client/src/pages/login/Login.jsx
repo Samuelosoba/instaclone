@@ -20,26 +20,26 @@ export default function Login() {
   const togglePassword = () => {
     setRevealPassword((prev) => !prev);
   };
- const onFormSubmit = async (data) => {
-   try {
-     const res = await loginUser(data);
+  const onFormSubmit = async (data) => {
+    try {
+      const res = await loginUser(data);
 
-     if (res.status === 200) {
-       toast.success(res.data.message);
-       setAccessToken(res.data.accessToken);
-       navigate("/");
-     }
-   } catch (error) {
-     handleError(error);
-   }
- };
+      if (res.status === 200) {
+        toast.success(res.data.message);
+        setAccessToken(res.data.accessToken);
+        navigate("/");
+      }
+    } catch (error) {
+      handleError(error);
+    }
+  };
   return (
     <div className="">
       <MetaArgs
         title="Log in to InstaShots"
         content="Get access to InstaShots"
       />
-      <div className=" md:w-[500px]  border rounded-md border-[#A1A1A1] py-[40px] px-[28px]">
+      <div className=" w-[90vw] md:w-[350px]  border rounded-md border-[#A1A1A1] py-[20px] px-[20px]">
         <div className="flex justify-center">
           <Link to="/">
             <img src={Logo} />
@@ -49,7 +49,7 @@ export default function Login() {
           className="md:max-w-[400px] mx-auto mt-10"
           onSubmit={handleSubmit(onFormSubmit)}
         >
-          <div className="mb-4">
+          <div className="mb-5">
             {" "}
             <label className="floating-label">
               <span>Username</span>
@@ -69,7 +69,7 @@ export default function Login() {
               </span>
             )}
           </div>
-          <div className="mb-4 relative">
+          <div className="mb-5 relative">
             {" "}
             <label className="floating-label">
               <span>Password</span>
@@ -107,13 +107,13 @@ export default function Login() {
               "Login"
             )}
           </button>
-          <p className="text-center">
+          <p className="text-center mt-[10px]">
             {" "}
             <Link to="/auth/forgot-password"> Forgot Password?</Link>
           </p>
         </form>
       </div>
-      <div className="w-[90vw] md:w-[500px] h-[80px] border rounded-md border-[#A1A1A1] mt-6 flex items-center justify-center py-4">
+      <div className="w-[90vw] md:w-[350px] h-[80px] border rounded-md border-[#A1A1A1] mt-6 flex items-center justify-center py-4">
         <p className="text-[20px] mr-2">Dont have an account? </p>{" "}
         <Link
           to="/auth/register"
