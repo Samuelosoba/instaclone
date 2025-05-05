@@ -3,6 +3,7 @@ import {
   createComment,
   getComments,
   deleteComment,
+  likeComment,
 } from "../controller/comment.js";
 import { verifyToken, authorizeRoles } from "../middleware/auth.js";
 import { cacheMiddleware, clearCache } from "../middleware/cache.js";
@@ -34,5 +35,15 @@ router.delete(
     next();
   },
   deleteComment
+);
+router.patch(
+  "/like/:id",
+  verifyToken,
+  authorizeRoles("user", "admin"),
+  (req, res, next) => {
+    clearCache("post_Comments"), next();
+    clearCache("post");
+  },
+  likeComment
 );
 export default router;

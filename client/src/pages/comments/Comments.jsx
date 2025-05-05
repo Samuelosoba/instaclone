@@ -1,45 +1,47 @@
-import { useLocation, useParams, useNavigate, Link } from "react-router";
-import { useState, useEffect } from "react";
-import Modal from "../../components/Modal";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import useFetch from "../../hooks/useFetch";
-import { getAPost, deletePost } from "../../api/post";
 import { useAuth } from "../../store";
+import { deletePost, getAPost } from "../../api/post";
 import MetaArgs from "../../components/MetaArgs";
 import useSlideControl from "../../hooks/useSlideControl";
-import LazyLoadComponent from "../../components/LazyLoadComponent";
 import TimeAgo from "timeago-react";
 import { useForm } from "react-hook-form";
 import handleError from "../../utils/handleError";
 import { toast } from "sonner";
-import { createComment, deleteComment } from "../../api/comment";
+import { createComment, deleteComment, likeComment } from "../../api/comment";
+import Modal from "../../components/Modal";
+import LazyLoadComponent from "../../components/LazyLoadComponent";
 
-export default function Comments() {
+export default function Comment() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [optionsModal, setOptionsModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setIsloading] = useState(false);
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
   } = useForm();
+
   const path = location.pathname === `/post/${id}`;
   const { accessToken, user } = useAuth();
+
   const { data, setData } = useFetch({
     apiCall: getAPost,
     params: [id, accessToken],
   });
-
   const { comments, post } = data ?? {};
-  //this is a reusable hook
+
   const { currentImageIndex, handlePrevious, handleNext } = useSlideControl(
     post?.media
   );
-
   console.log(data);
+
   useEffect(() => {
     if (path) {
       setIsModalOpen(true);
@@ -47,7 +49,7 @@ export default function Comments() {
       setIsModalOpen(false);
       navigate("/");
     }
-  }, [path]);
+  }, [navigate, path]);
 
   const handleClose = () => {
     setIsModalOpen(false);
@@ -57,20 +59,22 @@ export default function Comments() {
   const formatTime = (time) => {
     return <TimeAgo datetime={time} locale="en-US" />;
   };
+
   const deleteAPost = async () => {
-    setLoading(true);
+    setIsloading(true);
     try {
       const res = await deletePost(id, accessToken);
-      if (res.status == 200) {
+      if (res.status === 200) {
         toast.success(res.data.message);
         navigate("/");
       }
     } catch (error) {
       handleError(error);
     } finally {
-      setLoading(false);
+      setIsloading(false);
     }
   };
+
   const postComment = async (data) => {
     try {
       const res = await createComment(id, data, accessToken);
@@ -86,8 +90,9 @@ export default function Comments() {
       handleError(error);
     }
   };
+
   const deleteUserComment = async (commentId) => {
-    setLoading(true);
+    setIsloading(true);
     try {
       const res = await deleteComment(commentId, accessToken);
       if (res.status === 200) {
@@ -100,23 +105,38 @@ export default function Comments() {
     } catch (error) {
       handleError(error);
     } finally {
-      setLoading(false);
+      setIsloading(false);
+    }
+  };
+
+  const likeAComment = async (commentId) => {
+    try {
+      const res = await likeComment(commentId, accessToken);
+      if (res.status === 200) {
+        setData((prev) => ({
+          ...prev,
+          comments: prev.comments.map((c) =>
+            c._id === commentId ? { ...c, likes: res.data.comment.likes } : c
+          ),
+        }));
+      }
+    } catch (error) {
+      handleError(error);
     }
   };
   return (
     <>
       <MetaArgs
         title={`${post?.userId?.username} - ${post?.caption}`}
-        content="view post details"
+        content="View post details"
       />
       <Modal
         isOpen={isModalOpen}
-        id="postModalComment"
+        id="post_ModalComment"
         classname="w-[90%] max-w-[1024px] mx-auto p-0"
       >
         <button
-          className="btn btn-sm btn-circlee btn-ghost absolute right-2 top-2
-          z-30"
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-30"
           type="button"
           onClick={handleClose}
         >
@@ -128,15 +148,15 @@ export default function Comments() {
               {post?.media.map((item, index) => (
                 <div
                   key={index}
-                  className={`transistion-transform duration-300 ease-in-out transform ${
+                  className={`transition-transform duration-300 ease-in-out transform ${
                     index === currentImageIndex
-                      ? "fade-enter fade-enter-active"
-                      : "fade-exit fade-exit-active"
+                      ? "fade-enter-active"
+                      : "fade-exit-active"
                   }`}
                 >
                   {index === currentImageIndex && (
                     <>
-                      {item.endsWith(".mp4") || item.endsWith("webm") ? (
+                      {item.endsWith(".mp4") || item.endsWith(".webm") ? (
                         <>
                           <video
                             src={item}
@@ -144,26 +164,25 @@ export default function Comments() {
                             loop
                             playsInline
                             autoPlay
-                            className="w-full h-auto lg:h-[550px] object-cover
-                            aspect-square md:rounded-md"
+                            className="w-full h-auto lg:h-[550px] object-cover aspect-square md:rounded-md"
                           />
                         </>
                       ) : (
                         <LazyLoadComponent
                           image={item}
-                          classname="w-full h-[300px] lg:h-[700px] object-cover
-                          aspect-square shrink-0"
+                          classname="w-full h-[300px] lg:h-[700px] object-cover aspect-square shrink-0"
                         />
                       )}
                     </>
                   )}
                 </div>
               ))}
+
               <>
                 {currentImageIndex < post?.media?.length - 1 && (
                   <button
                     onClick={handleNext}
-                    className="abolute right-2 top-1/2 btn btn-circle btn-sm opacity-75 hover:opacity-100"
+                    className="absolute right-2 top-1/2 btn btn-circle btn-sm opacity-75 hover:opacity-100"
                   >
                     <i className="ri-arrow-right-s-line text-lg"></i>
                   </button>
@@ -173,18 +192,18 @@ export default function Comments() {
                 {currentImageIndex > 0 && (
                   <button
                     onClick={handlePrevious}
-                    className="absolute left-2 top-1/2 btn btn-circle btn-sm opacity-75 hover:opacity-100"
+                    className=" absolute left-2 top-1/2 btn btn-circle btn-sm opacity-75 hover:opacity-100"
                   >
                     <i className="ri-arrow-left-s-line text-lg"></i>
                   </button>
                 )}
               </>
               {post?.media?.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 transform-translate-x-1/2 flex gap-3">
+                <div className=" absolute bottom-4 left-1/2 transform-translate-x-1/2 flex gap-3">
                   {post?.media?.map((_, index) => (
                     <div
                       key={index}
-                      className={`w-[8px] h-[8px] ronded-full ${
+                      className={`w-[8px] h-[8px] rounded-full ${
                         index === currentImageIndex
                           ? "bg-fuchsia-900"
                           : "bg-white"
@@ -195,14 +214,11 @@ export default function Comments() {
               )}
             </figure>
           </div>
-          <div
-            className="col-span-12 lg:col-span-6 lg:relative h-auto
-          overflow-auto"
-          >
-            <div className="p-4 md:w-full mb-1 flex items-center justify-between border-b border-gray-300">
+          <div className="col-span-12 lg:col-span-6 lg:relative h-auto overflow-auto">
+            <div className="p-4 w-full md:w-full mb-1 flex items-center justify-between border-b border-gray-300">
               <Link
-                className="flex gap-2 items-center"
                 to={`/profile/${post?.userId?.username}`}
+                className="flex gap-2 items-center"
               >
                 <div className="avatar avatar-placeholder">
                   <div className="w-10 rounded-full border border-gray-300">
@@ -212,7 +228,7 @@ export default function Comments() {
                         alt={post?.userId?.username}
                       />
                     ) : (
-                      <span className="text-3xl">
+                      <span className="font-bold">
                         {post?.userId?.username?.charAt(0)}
                       </span>
                     )}
@@ -230,9 +246,9 @@ export default function Comments() {
               )}
               <Modal
                 isOpen={optionsModal}
-                id="options_Modal"
+                id="options_modal"
                 classname="w-[90%] max-w-[400px] mx-auto p-0"
-                onClose={() => setOptionsModal(false)}
+                onClose={() => setIsModalOpen(false)}
               >
                 <div className="text-center p-3">
                   <p
@@ -240,7 +256,7 @@ export default function Comments() {
                     className="cursor-pointer"
                     role="button"
                   >
-                    {loading ? "Deleting.." : "Delete"}
+                    {loading ? "Deleting..." : "Delete"}
                   </p>
                   <div className="divider my-2"></div>
                   <Link to={`/post/edit/${id}`}>Edit</Link>
@@ -265,7 +281,7 @@ export default function Comments() {
                         alt={post?.userId?.username}
                       />
                     ) : (
-                      <span className="text-3xl">
+                      <span className="font-bold text-3xl">
                         {post?.userId?.username?.charAt(0)}
                       </span>
                     )}
@@ -275,18 +291,18 @@ export default function Comments() {
                   <div>
                     <Link
                       to={`/profile/${post?.userId?.username}`}
-                      className="text-sm font-bold mb-0 mr-2"
+                      className="text-sm font-bold mt-0 mr-2"
                     >
                       {post?.userId?.username}
                     </Link>
                     <span className="text-sm mb-0 font-medium">
                       {post?.caption}{" "}
-                      {post?.description ? `- ${post?.description} ` : ""}
+                      {post?.decription ? `- ${post?.description}` : ""}
                     </span>
                   </div>
                   {post?.tags && (
                     <div className="flex flex-wrap items-center gap-2">
-                      {post?.tags.map((tag, index) => (
+                      {post?.tags?.map((tag, index) => (
                         <Link
                           to={`/tag/${tag}`}
                           className="text-fuchsia-900 text-sm"
@@ -303,7 +319,7 @@ export default function Comments() {
                 </div>
               </div>
               {comments?.length === 0 && (
-                <p className="text-center text-sm my-4">
+                <p className="text-center text-sm my-8">
                   No comments yet. Be the first to make a comment
                 </p>
               )}
@@ -320,7 +336,7 @@ export default function Comments() {
                               loading="lazy"
                             />
                           ) : (
-                            <span className="text-xl">
+                            <span className="font-bold text-3xl">
                               {comment?.user?.username?.charAt(0)}
                             </span>
                           )}
@@ -340,15 +356,14 @@ export default function Comments() {
                         <p className="text-xs text-gray-500">
                           {formatTime(comment?.createdAt)}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 font-semibold">
                           {comment?.likes?.length} likes
                         </p>
                         {comment?.user?._id === user?._id && (
                           <i
-                            className="ri-delete-bin-7-line cursor-pointer"
+                            className="ri-delete-bin-7-line cursor-pointer text-gray-500"
                             role="button"
                             title="Delete comment"
-                            // for delete comment
                             onClick={() => deleteUserComment(comment._id)}
                           ></i>
                         )}
@@ -356,14 +371,13 @@ export default function Comments() {
                     </div>
 
                     <i
-                      //this is us giving it a special attribute, so when we like, it displays a different color
                       className={`${
-                        comment?.likes?.includes(user?._id)
+                        comment?.likes?.includes(user._id)
                           ? "ri-heart-fill text-red-700"
                           : "ri-heart-line"
-                      }
-                      cursor-pointer`}
-                      role="buttom"
+                      } cursor-pointer`}
+                      role="button"
+                      onClick={() => likeAComment(comment._id)}
                     ></i>
                   </div>
                 </div>
@@ -371,7 +385,7 @@ export default function Comments() {
             </div>
 
             <div className="bg-white relative z-30 w-full border-t border-gray-300 py-2">
-              <div className="px-4 flex justify-between items-center ">
+              <div className="px-4 flex justify-between items-center">
                 <div className="flex gap-4 items-center">
                   <i
                     className={`${
@@ -379,7 +393,6 @@ export default function Comments() {
                         ? "ri-heart-fill text-red-700"
                         : "ri-heart-line"
                     } cursor-pointer text-2xl`}
-                    role="button"
                     title={
                       post?.likes?.some((item) => item._id === user?._id)
                         ? "Unlike"
@@ -397,9 +410,8 @@ export default function Comments() {
                   className={`${
                     post?.savedBy?.includes(user?._id)
                       ? "ri-bookmark-fill text-gray-900"
-                      : "ri-heart-line"
+                      : "ri-bookmark-line"
                   } cursor-pointer text-2xl`}
-                  role="button"
                   title={post?.savedBy?.includes(user?._id) ? "Unsave" : "Save"}
                 ></i>
               </div>
@@ -423,7 +435,7 @@ export default function Comments() {
                       </div>
                     </Link>
                     <p className="text-sm">
-                      liked by{""}
+                      liked by{" "}
                       <Link
                         to={`/profile/${like?.username}`}
                         className="font-medium"
@@ -440,7 +452,7 @@ export default function Comments() {
                 onSubmit={handleSubmit(postComment)}
               >
                 <textarea
-                  className="w-full border-0 h-[40px] focus:border-0 focus:outline-none text-sm"
+                  className="w-full border-0 h-[40px] focus:border-0 focus:outline-none text-sm "
                   placeholder="Add a comment..."
                   id="comment"
                   name="comment"
@@ -451,11 +463,11 @@ export default function Comments() {
                   type="submit"
                   className="btn btn-ghost text-fuchsia-900 font-bold absolute inset-y-0 right-0"
                 >
-                  {isSubmitting ? "Posting.." : "Post"}
+                  {isSubmitting ? "Posting..." : "Post"}
                 </button>
                 {errors?.comment && (
                   <p className="text-xs text-red-600 px-4">
-                    Comment is required
+                    Comment is requird
                   </p>
                 )}
               </form>

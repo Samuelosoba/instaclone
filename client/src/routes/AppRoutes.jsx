@@ -14,6 +14,8 @@ import SendVerifyMail from "../pages/verifyAccount/SendVerifyMail";
 import VerifyAccount from "../pages/verifyAccount/VerifyAccount";
 import ResetPassword from "../pages/forgetpassword/ResetPassword";
 import PostProvider from "../store/PostProvider";
+import Explore from "../components/Explore";
+import EditPost from "../pages/editPosts/EditPost";
 const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
 const RootLayout = lazy(() => import("../layouts/RootLayout"));
 const VerifyAccountLayout = lazy(() =>
@@ -71,8 +73,16 @@ export default function AppRoutes() {
           element: <Home />,
         },
         {
+          path: "explore",
+          element: <Explore />,
+        },
+        {
           path: "post/:id",
           element: <Comments />,
+        },
+        {
+          path: "post/edit/:id",
+          element: <EditPost />,
         },
       ],
     },
