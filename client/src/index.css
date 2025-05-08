@@ -4,6 +4,7 @@
 }
 @theme {
   --font-rubik: "Rubik Variable", "san-serif";
+  --wine-red: #8d0d76;
 }
 * {
   scroll-behavior: smooth;

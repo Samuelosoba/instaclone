@@ -5,7 +5,7 @@ import { useFiles } from "../hooks/useFile";
 import useTags from "../hooks/useTags";
 import { createPost } from "../api/post";
 import handleError from "../utils/handleError";
-import { useAuth } from "../store";
+import { useAuth, usePost } from "../store";
 import { toast } from "sonner";
 export default function CreatePost() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +19,7 @@ export default function CreatePost() {
   const { selectedFiles, setSelectedFiles, err, handleFiles } = useFiles();
   const { tags, setTags, handleTags, removeTag } = useTags();
   const { accessToken } = useAuth();
+  const { setPosts } = usePost();
   const handlePrev = () => {
     setStep((prev) => prev - 1);
   };
@@ -40,6 +41,7 @@ export default function CreatePost() {
         setSelectedFiles([]);
         setStep(1);
         setIsModalOpen(false);
+        setPosts((prevPosts) => [res.data.post, ...prevPosts]);
       }
     } catch (error) {
       handleError(error);
@@ -180,7 +182,7 @@ export default function CreatePost() {
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag, index) => (
                     <div
-                      className="badge badge-neutral gap-2 cursor-pointer text-gray-400"
+                      className="badge bg-black gap-2 cursor-pointer text-gray-400"
                       key={index}
                       onClick={() => removeTag(index)}
                     >

@@ -8,6 +8,8 @@ import {
   getAPost,
   deletePost,
   updatePost,
+  getPostsByTags,
+  explorePosts,
 } from "../controller/post.js";
 import { verifyToken, authorizeRoles } from "../middleware/auth.js";
 import { cacheMiddleware, clearCache } from "../middleware/cache.js";
@@ -32,6 +34,7 @@ router.patch(
   authorizeRoles("user", "admin"),
   (req, res, next) => {
     clearCache("posts"); //clear user info
+    clearCache("post");
     next();
   },
   handleLikePost
@@ -42,6 +45,7 @@ router.patch(
   authorizeRoles("user", "admin"),
   (req, res, next) => {
     clearCache("posts"); //clear user info
+    clearCache("post");
     next();
   },
   handleSavePost
@@ -75,9 +79,25 @@ router.patch(
   verifyToken,
   authorizeRoles("user", "admin"),
   (req, res, next) => {
-    clearCache("post"); //populate user with new data
+    clearCache("posts"); //populate user with new data
     next();
   },
   updatePost
+);
+
+router.get(
+  "/explore",
+  verifyToken,
+  authorizeRoles("user", "admin"),
+  cacheMiddleware("explore", 60),
+  explorePosts
+);
+
+router.get(
+  "/get-posts-tags/:tags",
+  verifyToken,
+  authorizeRoles("user", "admin"),
+  cacheMiddleware("explore", 600),
+  getPostsByTags
 );
 export default router;

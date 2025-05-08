@@ -1,15 +1,19 @@
 import { Outlet } from "react-router";
 import Sidebar from "../components/Sidebar";
+import Nav from "../components/Nav";
+import Footer from "../components/Footer";
 
 export default function RootLayout() {
   return (
     <section>
-      <Sidebar></Sidebar>
-      <div className="md:ml-[220px] xl:ml-[240px] min-h-screen">
+      <Nav />
+      <Sidebar />
+      <div className="md:ml-[220px] xl:ml-[240px] min-h-screen mt-14 md:mt-0">
         <div className="container mx-auto">
           <Outlet />
         </div>
       </div>
+      <Footer />
     </section>
   );
 }

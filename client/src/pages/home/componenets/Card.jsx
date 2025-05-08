@@ -23,10 +23,10 @@ export default function Card({ post }) {
   });
   const { setPosts } = usePost();
   const [isPostLiked, setIsPostLiked] = useState(
-    post?.likes?.includes(user?._id)
+    post?.likes?.some((id) => id._id === user?._id)
   ); //returns boolean if userId atches the likeId
   const [isPostSaved, setIsPostSaved] = useState(
-    post?.savedBy?.includes(user?._id)
+    post?.savedBy?.some((id) => id._id === user?._id)
   );
   const [likeCount, setLikeCount] = useState(post?.likes?.length || 0);
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ export default function Card({ post }) {
         setPosts((prev) =>
           prev.map((item) => (item._id === post?._id ? res.data.post : item))
         );
-        setIsPostLiked(res.data.post.likes.includes(user?._id));
+        setIsPostLiked(res.data.post.likes.some((id) => id._id === user?._id));
         setLikeCount(res.data.post.likes.length);
       }
     } catch (error) {
@@ -79,7 +79,9 @@ export default function Card({ post }) {
         setPosts((prev) =>
           prev.map((item) => (item._id === post?._id ? res.data.post : item))
         );
-        setIsPostSaved(res.data.post.savedBy.includes(user?._id));
+        setIsPostSaved(
+          res.data.post.savedBy.some((id) => id._id === user?._id)
+        );
       }
     } catch (error) {
       handleError(error);
@@ -98,7 +100,11 @@ export default function Card({ post }) {
               <div className="avatar avatar-placeholder">
                 <div className="w-12 rounded-full border border-gray-300">
                   {post?.userId.profilePicture ? (
-                    <img />
+                    <img
+                      src={post?.userId?.profilePicture}
+                      alt={post?.userId?.username}
+                      loading="lazy"
+                    />
                   ) : (
                     <span className="text-3xl">
                       {post?.userId?.username?.charAt(0)}
@@ -212,7 +218,7 @@ export default function Card({ post }) {
             <i
               className={`${
                 isPostSaved
-                  ? "ri-bookmark-fill text-gray-800"
+                  ? "ri-bookmark-fill text-[var(--wine-red)]"
                   : "ri-bookmark-line"
               } text-2xl cursor-pointer`}
               role="button"

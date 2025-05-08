@@ -1,14 +1,15 @@
-import { NavLink } from "react-router";
 import InstaShots from "../assets/logo_instagram.png";
-import { sidebarLinks } from "../libs/Constant";
+import { NavLink } from "react-router";
+import { sidebarLinks } from "../libs/Constant"; 
 import Search from "./Search";
-import Notifications from "./Notifications";
 import CreatePost from "./CreatePost";
 import { useAuth } from "../store";
+
 export default function Sidebar() {
   const { user, handleLogout } = useAuth();
+
   return (
-    <div className="hidden z-50 md:block fixed min-h-screen shadow border-r border-gray-200 w-[220px] xl:w-[240px]">
+    <div className="hidden md:block min-h-screen fixed z-50 shadow border-r border-gray-200 w-[220px] xl:w-[240px]">
       <div className="flex flex-col min-h-screen justify-between py-6 px-4">
         <div>
           <div className="flex gap-3 items-center mb-10">
@@ -25,20 +26,18 @@ export default function Sidebar() {
               >
                 {({ isActive }) => (
                   <span
-                    className={`flex items-center gap-3 p-3 hover:font-bold hover:transition duration-150 ease-out text-lg rounded-lg ${
+                    className={`flex items-center gap-3 p-2 hover:font-bold hover:transition duration-150 ease-out text-lg rounded-lg ${
                       isActive
-                        ? "font-bold  bg-[#8D0D76] text-white"
-                        : " hover:bg-zinc-100 hover:text-zinc-800 "
+                        ? "font-bold bg-[#8D0D76] text-white"
+                        : "hover:bg-zinc-100 hover:text-zinc-800"
                     }`}
                   >
-                    <i className={`${Icon} text-2xl`}></i>
-                    {name}
+                    <i className={`${Icon} text-2xl`}></i> {name}
                   </span>
                 )}
               </NavLink>
             ))}
             <Search />
-            <Notifications />
             <CreatePost />
             <NavLink
               to={`/profile/${user?.username}`}
@@ -47,10 +46,10 @@ export default function Sidebar() {
             >
               {({ isActive }) => (
                 <span
-                  className={`flex items-center gap-3 p-3 hover:font-bold hover:transition duration-150 ease-out text-lg rounded-lg ${
+                  className={`flex items-center gap-3 p-2 hover:font-bold hover:transition duration-150 ease-out text-lg rounded-lg ${
                     isActive
-                      ? "font-bold  bg-[#8D0D76] text-white"
-                      : " hover:bg-zinc-100 hover:text-zinc-800 "
+                      ? "font-bold bg-[#8D0D76] text-white"
+                      : "hover:bg-zinc-100 hover:text-zinc-800"
                   }`}
                 >
                   <div className="avatar avatar-placeholder">
@@ -91,13 +90,13 @@ export default function Sidebar() {
             className="dropdown-content menu bg-base-100 rounded-box z-1 p-2 shadow-sm w-full"
           >
             <li>
-              <NavLink to="/settings">
-                <i className="ri-settings-line text-2xl"></i> Settings
+              <NavLink to="/settings" className="text-lg">
+                <i className="ri-settings-line text-2xl"></i>Settings
               </NavLink>
             </li>
             <li>
-              <a onClick={handleLogout}>
-                <i className="ri-logout-box-line text-2xl"></i> Logout
+              <a onClick={handleLogout} className="text-lg">
+                <i className="ri-logout-box-line text-2xl"></i>Logout
               </a>
             </li>
           </ul>

@@ -1,7 +1,7 @@
 import { NavLink } from "react-router";
 import Search from "./Search";
 import { useAuth } from "../store";
-import { sidebarLink } from "../libs/constant";
+import { sidebarLinks } from "../libs/Constant"; 
 import CreatePost from "./CreatePost"
 
 export default function Footer() {
@@ -9,7 +9,7 @@ export default function Footer() {
   return (
     <div className="md:hidden sticky bottom-0 z-40 py-2 px-4 bg-white dark:bg-base-200 shadow">
       <div className="flex justify-around items-center">
-        {sidebarLink.map(({ id, path, Icon }) => (
+        {sidebarLinks.map(({ id, path, Icon }) => (
           <NavLink key={id} to={path}>
             {({ isActive }) => (
               <span>

@@ -5,6 +5,7 @@ import handleError from "../utils/handleError";
 export default function useFetch({ apiCall, params = [] }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const { accessToken } = useAuth();
 
   const fetchData = useCallback(async () => {
@@ -15,13 +16,14 @@ export default function useFetch({ apiCall, params = [] }) {
       const res = await apiCall(...params, {
         signal: controller.signal,
       });
-    
+
       if (!controller.signal.aborted) {
         setData(res.data);
       }
     } catch (error) {
       if (!controller.signal.aborted && error.name !== "AbortError") {
         handleError(error);
+        setError("Failed to load posts. Please try again")
       }
     } finally {
       if (!controller.signal.aborted) {

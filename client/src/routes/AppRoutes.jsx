@@ -7,21 +7,27 @@ import Login from "../pages/login/Login";
 import ForgetPassword from "../pages/forgetpassword/ForgetPassword";
 import { PrivateRoutes, PublicRoutes, VerifyRoutes } from "./ProtectedRoutes";
 import Comments from "../pages/comments/Comments";
-
-// import accessToken from ""
 import { useAuth } from "../store";
 import SendVerifyMail from "../pages/verifyAccount/SendVerifyMail";
 import VerifyAccount from "../pages/verifyAccount/VerifyAccount";
 import ResetPassword from "../pages/forgetpassword/ResetPassword";
 import PostProvider from "../store/PostProvider";
-import Explore from "../components/Explore";
 import EditPost from "../pages/editPosts/EditPost";
+import Profile from "../pages/profile/Profile";
+import Followers from "../pages/profile/followers/Followers";
+import Following from "../pages/profile/following/Following";
+import Tag from "../pages/tag/Tag";
+import Settings from "../pages/settings/Settings";
+import UpdatePassword from "../pages/settings/UpdatePassword";
+import AccountPrivacy from "../pages/settings/AccountPrivacy";
+import DeleteAccount from "../pages/settings/DeleteAccount";
+import Explore from "../pages/explore/Explore";
 const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
 const RootLayout = lazy(() => import("../layouts/RootLayout"));
 const VerifyAccountLayout = lazy(() =>
   import("../layouts/VerifyAccountLayout")
 );
-
+const NotFoundPAge = lazy(() => import("../pages/NotFoundRoute"));
 export default function AppRoutes() {
   const { accessToken, isCheckingAuth, user } = useAuth();
   if (isCheckingAuth) {
@@ -84,6 +90,40 @@ export default function AppRoutes() {
           path: "post/edit/:id",
           element: <EditPost />,
         },
+        {
+          path: "profile/:username",
+          element: <Profile />,
+        },
+        {
+          path: "profile/:username/followers",
+          element: <Followers />,
+        },
+        {
+          path: "profile/:username/following",
+          element: <Following />,
+        },
+        {
+          path: "tag/:tag",
+          element: <Tag />,
+        },
+        {
+          path: "settings",
+          element: <Settings />,
+          children: [
+            {
+              path: "update-password",
+              element: <UpdatePassword />,
+            },
+            {
+              path: "account-privacy",
+              element: <AccountPrivacy />,
+            },
+            {
+              path: "delete-account",
+              element: <DeleteAccount />,
+            },
+          ],
+        },
       ],
     },
     {
@@ -95,12 +135,23 @@ export default function AppRoutes() {
         </Suspense>
       ),
       children: [
-        { path: "verify-email", element: <SendVerifyMail /> },
+        {
+          path: "verify-email",
+          element: <SendVerifyMail />,
+        },
         {
           path: "verify-email/:userId/:verificationToken",
           element: <VerifyAccount />,
         },
       ],
+    },
+    {
+      path: "*",
+      element: (
+        <Suspense fallback={<LazySpinner />}>
+          <NotFoundPAge />
+        </Suspense>
+      ),
     },
   ];
   const router = createBrowserRouter(routes);

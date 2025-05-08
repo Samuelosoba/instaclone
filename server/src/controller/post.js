@@ -51,10 +51,14 @@ export const createPost = async (req, res, next) => {
       media: mediaResults.urls,
       mediaPublicIds: mediaResults.ids,
     });
+    const populatePost = await Post.findById(post._id).populate(
+      "userId",
+      "username profilePicture"
+    );
     res.status(201).json({
       success: true,
       message: "Post created successfully",
-      post,
+      post: populatePost,
     });
   } catch (error) {
     //delete media uploaded to cloudinary if post creation failed
@@ -78,6 +82,8 @@ export const getAllPosts = async (req, res, next) => {
   try {
     const posts = await Post.find()
       .populate("userId", "username profilePicture")
+      .populate("likes", "username profilePicture")
+      .populate("savedBy", "username profilePicture")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -116,14 +122,16 @@ export const handleLikePost = async (req, res, next) => {
     }
     await post.save(); //this is to save a post
     //populat userId in the likes array with extra data before sending response
-    const populatePost = await Post.findById(post._id).populate(
-      "userId",
-      "username profilePicture"
-      // the above is to enable us get both the userId aswell as the username and profilePictues of users.
-    );
+    const populatePost = await Post.findById(post._id)
+      .populate(
+        "userId",
+        "username profilePicture"
+        // the above is to enable us get both the userId aswell as the username and profilePictues of users.
+      )
+      .populate("likes", "username profilePicture");
     res.status(200).json({
       success: true,
-      message: populatePost.likes.map((id) => id.toString()).includes(userId)
+      message: populatePost.likes.some((id) => id._id.toString() === userId)
         ? "Post liked"
         : "Post unliked",
       post: populatePost,
@@ -180,14 +188,16 @@ export const handleSavePost = async (req, res, next) => {
     }
     await post.save(); //this is to save a post
     //populat userId in the savedBy array with extra data before sending response
-    const populatePost = await Post.findById(post._id).populate(
-      "userId",
-      "username profilePicture"
-      // the above is to enable us get both the userId aswell as the username and profilePictues of users.
-    );
+    const populatePost = await Post.findById(post._id)
+      .populate(
+        "userId",
+        "username profilePicture"
+        // the above is to enable us get both the userId aswell as the username and profilePictues of users.
+      )
+      .populate("savedBy", "username profilePicture");
     res.status(200).json({
       success: true,
-      message: populatePost.savedBy.map((id) => id.toString().includes(userId))
+      message: populatePost.savedBy.some((id) => id._id.toString() === userId)
         ? "Post saved"
         : "Post unsaved",
       post: populatePost,
@@ -205,11 +215,11 @@ export const getAPost = async (req, res, next) => {
     const [post, comments] = await Promise.all([
       await Post.findById(postId)
         .populate("userId", "username profilePicture")
-        .populate("likes", "username profilePicture"),
-      await Comment.find({ postId }).populate(
-        "user",
-        "username profilePicture"
-      ),
+        .populate("likes", "username profilePicture")
+        .populate("savedBy", "username profilePicture"),
+      await Comment.find({ postId })
+        .populate("user", "username profilePicture")
+        .sort({ createdAt: -1 }),
     ]);
     if (!post) {
       return next(createHttpError(404, "Post not found"));
@@ -289,6 +299,65 @@ export const updatePost = async (req, res, next) => {
       success: true,
       message: "Post updated",
       post: updatePost,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const explorePosts = async (req, res, next) => {
+  const { id: userId } = req.user;
+  try {
+    // Get user's own posts to exclude them
+    const userPosts = await Post.find({ userId });
+    const userPostIds = userPosts.map((post) => post._id);
+
+    // Get random posts excluding user's own posts
+    const randomPosts = await Post.find({
+      _id: { $nin: userPostIds },
+    })
+      .populate("userId", "username fullname profilePicture")
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.status(200).json({
+      success: true,
+      randomPosts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPostsByTags = async (req, res, next) => {
+  const { tags } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const totalPosts = await Post.countDocuments({
+    tags: { $in: tags.split(",") },
+  });
+  const totalPages = Math.ceil(totalPosts / limit);
+  try {
+    const posts = await Post.find({ tags: { $in: tags.split(",") } })
+      .populate("userId", "username profilePicture")
+      .populate("likes", "username profilePicture")
+      .populate("savedBy", "username profilePicture")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    res.status(200).json({
+      success: true,
+      posts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalPosts,
+        hasMore: skip + posts.length < totalPosts,
+      },
     });
   } catch (error) {
     next(error);

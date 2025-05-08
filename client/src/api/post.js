@@ -63,3 +63,22 @@ export const updatePost = async (postId, formData, accessToken) => {
     },
   });
 };
+
+export const explorePost = async (accessToken) => {
+  return await axiosInstance.get("/post/explore", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
+export const getAllPostsByTag = async (tag, page, limit, accessToken) => {
+  return await axiosInstance.get(
+    `/post/get-posts-tags/${tag}?page=${page}&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+};
